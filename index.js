@@ -33,7 +33,7 @@ Bonus 2: Design a database that stores restaurant name and restaurant open times
 */
 
 
-// *** parseData(filename): return data in schema: [{name: String, hours: {open: String, close: String} }]
+// *** parseData(filename): return data in schema: [{name: String, hours: {day: {open: String, close: String} }]
 const parseData = (filename) => {
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   const data = []
@@ -83,12 +83,9 @@ const parseData = (filename) => {
 
 const findOpenRestaurants = (csvFilename, searchDatetime) => {
   const data = parseData(csvFilename)
-  
+
 
 }
-
-const data = findOpenRestaurants('data.csv', "searchDatetime")
-console.log(data[1])
 
 // const app = express();
 
