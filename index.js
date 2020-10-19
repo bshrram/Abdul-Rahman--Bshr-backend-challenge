@@ -1,6 +1,7 @@
 // const express = require('express');
 // const bodyParser = require('body-parser');
 const fs = require('fs')
+const moment = require('moment')
 // https://gist.githubusercontent.com/rodbegbie/9321897/raw/0468834c3044e5e4e6c2779bfca377d9f01d3abe/rest_hours.csv
 
 /*
@@ -34,15 +35,15 @@ Bonus 2: Design a database that stores restaurant name and restaurant open times
 
 
 // *** parseData(filename): return data in schema: [{name: String, hours: {day: {open: String, close: String} }]
+const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const parseData = (filename) => {
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   const data = []
   const csvData = fs.readFileSync(filename)
     .toString().split('\n').map(e => e.trim()).map(e => e.replace('","', '",,"').split(',,').map(e => e.trim().split(' /')))
 
   const reseturantsNames = csvData.map(d => d[0][0].slice(1, -1))
   const initAppointments = csvData.map(d => d[1])
-  const appointments = initAppointments.map(ia => {
+  const appointments = initAppointments.map((ia, ind) => {
     if (ia) {
       const daysClock = ia.map(a => {
         a = a.slice(1, -1)
@@ -58,7 +59,7 @@ const parseData = (filename) => {
           const lDayIndex = weekDays.findIndex(d => d === lDay)
           let RDayIndex = RDay ? weekDays.findIndex(d => d === RDay) : lDayIndex
           if (RDayIndex < lDayIndex)
-            RDayIndex = 6 - RDayIndex + lDayIndex
+            RDayIndex = 6 + RDayIndex + 1
           for (let dI = lDayIndex; dI <= RDayIndex; dI++) {
             const i = dI % 7
             res[weekDays[i]] = { open, close }
@@ -66,6 +67,7 @@ const parseData = (filename) => {
         }
         return res
       })
+      
       return daysClock.reduce((acc, x) => {
         for (let k in x) acc[k] = x[k]
         return acc
@@ -83,9 +85,23 @@ const parseData = (filename) => {
 
 const findOpenRestaurants = (csvFilename, searchDatetime) => {
   const data = parseData(csvFilename)
-
+  const day = searchDatetime.getDay()
+  const res = data.filter(d => {
+    if (!d.hours || !d.hours[weekDays[day]]) return 0
+    let {open, close} = d.hours[weekDays[day]]
+    let openDate = moment(searchDatetime.toDateString()+ ' ' + open, "dddd MMMM Do YYYY h:mm a")
+    let closeDate = moment(searchDatetime.toDateString()+ ' ' + close, "dddd MMMM Do YYYY h:mm a")
+    openDate = openDate.toDate()
+    closeDate = closeDate.toDate()
+    return searchDatetime >= openDate && searchDatetime <= closeDate
+  })
+  return res
 
 }
+
+const d = new Date()
+const r = findOpenRestaurants('data.csv', d)
+console.log(r)
 
 // const app = express();
 
